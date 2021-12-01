@@ -45,7 +45,15 @@ public class Expression {
     {
         for(char elem: charArr1) {
             if((elem>='0'&&elem<='9')||elem=='.' ) {
-                if (Compliance_check.isEmpty());
+                if (Compliance_check.isEmpty())
+                    Compliance_check.add('$');
+                else {
+                    char p = (char) Compliance_check.peek();
+                    if (p != '$') {
+                        Compliance_check.add('$');
+                    }
+                }
+
             }else
             if(elem=='-'||elem=='+'||elem=='*'||elem=='/') {
                 if (Compliance_check.isEmpty()) {
@@ -53,18 +61,17 @@ public class Expression {
                     return check;
                 }
                 char h=(char)Compliance_check.peek();
-                if(h=='-'||h=='+'||h=='*'||h=='/'){
+                if(h=='-'||h=='+'||h=='*'||h=='/'||h=='('||h==')'){
                     check = false;
                     return check;
                 }else Compliance_check.add(elem);
             }else
-            if(elem=='('||elem==')') {
-                char l = (char) Compliance_check.peek();
-                if (l == '.') {
-                    check = false;
-                    return check;
-                }
+            if(elem=='('||elem==')')
                 Compliance_check.add(elem);
+            else
+            {
+                check = false;
+                return check;
             }
         }
 
@@ -78,7 +85,6 @@ public class Expression {
             check = false;
             return check;
         }
-
         Stack staples = new Stack();
         while(!Compliance_check.isEmpty()) {
             char tm = (char) Compliance_check.pop();
