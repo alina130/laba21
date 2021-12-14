@@ -9,95 +9,92 @@ import java.util.Stack;
  */
 public class Expression {
 
-    private Stack st = new Stack();
-    private Queue qe = new LinkedList();
-    private Queue qeNum = new LinkedList();
-    private Stack Compliance_check = new Stack();
-    private double temp;
+    private Stack stackInfToPost = new Stack();
+    private Queue queuePost = new LinkedList();
+    private Queue queueDouble = new LinkedList();
+    private Stack stackError = new Stack();
+    private double tempVar;
     private boolean check = true;
-    char [] charArr1;
-    char [] charArr2;
+    char [] ToCharArr1;
+    char [] ToCharArr2;
 
     /**
-     * делаем массив из строк
-     * @param str1 строка1
-     * @param str2 строка2
+     * Конструктор, передается 2 строки , одинаковые ,
+     * @param expression1 строка1
+     * @param expression2 строка2
      */
-    public Expression(String str1, String str2)
+    public Expression(String expression1, String expression2)
     {
-        charArr1 = str1.toCharArray();
-        charArr2 = str2.toCharArray();
+        ToCharArr1 = expression1.toCharArray();
+        ToCharArr2 = expression2.toCharArray();
     }
 
     /**
      *Получение постфиксной записи
-     * @return результат работы стека с постфиксной записью
+     * @return результат работы с постфиксной записью
      */
-    public Queue getQE() {
-        return qe;
+    public Queue GetPostOfQueue() {
+        return queuePost;
     }
 
     /**
      * проверка ошибок
-     * @return наличие ошибки(есть/нет)
+     * @return наличие ошибки(есть/нет) при любом моменте ошибки вылетит check = false
      */
-    public boolean Comp_check()
+    public boolean ErrorCheck()
     {
-        for(char elem: charArr1) {
-            if((elem>='0'&&elem<='9')||elem=='.' ) {
-                if (Compliance_check.isEmpty())
-                    Compliance_check.add('$');
-                else {
-                    char p = (char) Compliance_check.peek();
-                    if (p != '$') {
-                        Compliance_check.add('$');
-                    }
-                }
-
+        for(char element: ToCharArr1) {
+            if((element>='0'&&element<='9') || element=='.') {
+                stackError.add(element);
             }else
-            if(elem=='-'||elem=='+'||elem=='*'||elem=='/') {
-                if (Compliance_check.isEmpty()) {
+            if(element=='-'|| element=='+'|| element=='*'||element=='/') {
+                if (stackError.isEmpty()) {
                     check = false;
                     return check;
                 }
-                char h=(char)Compliance_check.peek();
-                if(h=='-'||h=='+'||h=='*'||h=='/'||h=='('||h==')'){
+                char TopOfStack=(char) stackError.peek();
+                if(TopOfStack=='-'||TopOfStack=='+'||TopOfStack=='*'||TopOfStack=='/'||TopOfStack=='('||TopOfStack=='.'){
                     check = false;
                     return check;
-                }else Compliance_check.add(elem);
+                }else stackError.add(element);
             }else
-            if(elem=='('||elem==')')
-                Compliance_check.add(elem);
+            if(element=='('||element==')') {
+                char topOfStack =(char) stackError.peek();
+                if(topOfStack == '.'){
+                    check = false;
+                    return check;
+                }
+                stackError.add(element);
+            }
             else
             {
                 check = false;
                 return check;
             }
         }
-
-        if (Compliance_check.isEmpty()) {
+        if (stackError.isEmpty()) {
             check = false;
             return check;
         }
+        char EndOfStack=(char) stackError.peek();
+        if(EndOfStack=='-'||EndOfStack=='+'||EndOfStack=='*'||EndOfStack=='/') {
+        check = false;
+        return check;
+    }
 
-        char h=(char)Compliance_check.peek();
-        if(h=='-'||h=='+'||h=='*'||h=='/') {
-            check = false;
-            return check;
-        }
-        Stack staples = new Stack();
-        while(!Compliance_check.isEmpty()) {
-            char tm = (char) Compliance_check.pop();
-            if(tm=='(') {
-                if (staples.isEmpty()) {
+        Stack StaplesStack = new Stack();
+        while(!stackError.isEmpty()) {
+            char endOfStack = (char) stackError.pop();
+            if(endOfStack=='(') {
+                if (StaplesStack.isEmpty()) {
                     check = false;
                     return check;
-                } else staples.pop();
+                } else StaplesStack.pop();
             }
-            else if(tm==')')
-                staples.push(tm);
+            else if(endOfStack==')')
+                StaplesStack.push(endOfStack);
         }
-        if(!staples.isEmpty())
+        if(!StaplesStack.isEmpty())
         {
             check = false;
             return check;
@@ -107,66 +104,65 @@ public class Expression {
 
     /**
      * Перевод из инфиксной в постфиксную
-     * @return постфиксную форму записи
+     * @return проверка ошибки - деление на 0
      */
     public boolean InfToPost()
     {
-        if(!Comp_check())
+        if(!ErrorCheck())
             return false;
 
-        for(char elem: charArr2)
+        for(char elem: ToCharArr2)
         {
             if((elem>='0'&&elem<='9')||elem=='.' )
-                qeNum.add(elem);
+                queueDouble.add(elem);
             else {
-                if (!qeNum.isEmpty()) {
-                    temp = toDouble();
-                    if(temp==0d&&!st.isEmpty()&&!qe.isEmpty())
-                        if((char)st.peek()=='/'){
+                if (!queueDouble.isEmpty()) {
+                    tempVar = toDouble();
+                    if (tempVar == 0d && !stackInfToPost.isEmpty() && !queuePost.isEmpty())
+                        if ((char) stackInfToPost.peek() == '/') {
                             check = false;
                             return check;
                         }
-                    qe.add(temp);
+                    queuePost.add(tempVar);
                 }
-
                 if (elem == '(') {
-                    st.push(elem);
+                    stackInfToPost.push(elem);
                 }
                 if (elem == ')') {
                     pop();
                 }
                 if(elem=='+'||elem=='-') {
-                    if (st.empty() || (char) st.peek() == '(') {
-                        st.push(elem);
+                    if (stackInfToPost.empty() || (char) stackInfToPost.peek() == '(') {
+                        stackInfToPost.push(elem);
                     }
                     else
                     {
-                        popPriority1();
-                        st.push(elem);
+                        popForPlusMinus();
+                        stackInfToPost.push(elem);
                     }
                 }
                 if(elem=='*'||elem=='/') {
-                    if (st.empty() || (char) st.peek() == '(')
-                        st.push(elem);
+                    if (stackInfToPost.empty() || (char) stackInfToPost.peek() == '(')
+                        stackInfToPost.push(elem);
                     else {
-                        popPriority2();
-                        st.push(elem);
+                        popForMulDiv();
+                        stackInfToPost.push(elem);
                     }
                 }
             }
         }
-        if (!qeNum.isEmpty()) {
-            temp = toDouble();
-            if(temp==0d&&!st.isEmpty()&&!qe.isEmpty())
-                if((char)st.peek()=='/'){
+        if (!queueDouble.isEmpty()) {
+            tempVar = toDouble();
+            if(tempVar ==0d&&!stackInfToPost.isEmpty()&&!queuePost.isEmpty())
+                if((char) stackInfToPost.peek()=='/'){
                     check = false;
                     return check;
                 }
-            qe.add(temp);
+            queuePost.add(tempVar);
         }
-        while (!st.empty())
+        while (!stackInfToPost.empty())
         {
-            qe.add((char)st.pop());
+            queuePost.add((char) stackInfToPost.pop());
         }
         return check;
     }
@@ -175,61 +171,67 @@ public class Expression {
      * Вычисление постфиксного выражения
      * @return результат вычисления
      */
-    public double PostInRes()
+    double solution =0;
+    public boolean PostOfResult()
     {
         Stack result = new Stack();
 
-        while(!qe.isEmpty())
+        while(!queuePost.isEmpty())
         {
-            double a, b;
-            String ch = String.valueOf(qe.peek());
-            switch (ch) {
+            double number1, number2;
+            String choice = String.valueOf(queuePost.peek());
+            switch (choice) {
                 case "+":
-                    a = (double) result.pop();
-                    b = (double) result.pop();
-                    result.push(a+b);
+                    number1 = (double) result.pop();
+                    number2 = (double) result.pop();
+                    result.push(number1+number2);
                     break;
                 case "-":
-                    a = (double) result.pop();
-                    b = (double) result.pop();
-                    result.push(b-a);
+                    number1 = (double) result.pop();
+                    number2 = (double) result.pop();
+                    result.push(number2-number1);
                     break;
                 case "*":
-                    a = (double) result.pop();
-                    b = (double) result.pop();
-                    result.push(a*b);
+                    number1 = (double) result.pop();
+                    number2 = (double) result.pop();
+                    result.push(number1*number2);
                     break;
                 case "/":
-                    a = (double) result.pop();
-                    b = (double) result.pop();
-                    result.push(b/a);
+                    number1 = (double) result.pop();
+                    number2 = (double) result.pop();
+                    if (number1==0)
+                        return false;
+                    result.push(number2/number1);
                     break;
                 default:
-                    double res = (double)qe.peek();
-                    result.push(res);
+                    double TopQueuePost = (double) queuePost.peek();
+                    result.push(TopQueuePost);
                     break;
             }
-            qe.poll();
+            queuePost.poll();
         }
-        return (double)result.peek();
+        solution = (double)result.peek();
+        return true;
     }
-
+public double getSolution(){
+        return solution;
+}
     /**
      *метод возвращает элемент, находящийся в верхней части стека, а затем удаляет его
      */
     private void pop()
     {
-        while (!st.empty())
+        while (!stackInfToPost.empty())
         {
-            char temp = (char)st.peek();
-            if(temp == '(') {
-                st.pop();
+            char TopOfStackInfToPost = (char) stackInfToPost.peek();
+            if(TopOfStackInfToPost == '(') {
+                stackInfToPost.pop();
                 break;
             }
             else
             {
-                qe.add(temp);
-                st.pop();
+                queuePost.add(TopOfStackInfToPost);
+                stackInfToPost.pop();
             }
         }
 
@@ -237,18 +239,18 @@ public class Expression {
     /**
      *Для вытаскивания +-
      */
-    private void popPriority1()
+    private void popForPlusMinus()
     {
-        while (!st.empty())
+        while (!stackInfToPost.empty())
         {
-            char temp = (char)st.peek();
-            if(temp == '(') {
+            char TempVar = (char) stackInfToPost.peek();
+            if(TempVar == '(') {
                 break;
             }
             else
             {
-                qe.add(temp);
-                st.pop();
+                queuePost.add(TempVar);
+                stackInfToPost.pop();
             }
         }
 
@@ -257,68 +259,68 @@ public class Expression {
     /**
      *для вытаскивания * /
      */
-    private void popPriority2()
+    private void popForMulDiv()
     {
-        while (!st.empty())
+        while (!stackInfToPost.empty())
         {
-            char temp = (char)st.peek();
-            if(temp == '('||temp == '+'||temp == '-') {
+            char TempVar = (char) stackInfToPost.peek();
+            if(TempVar == '('||TempVar == '+'||TempVar == '-') {
                 break;
             }
             else
             {
-                qe.add(temp);
-                st.pop();
+                queuePost.add(TempVar);
+                stackInfToPost.pop();
             }
         }
     }
 
     /**
-     *переводит в double 5=5.0
+     *переводит в double
      * @return результат
      */
     private double toDouble()
     {
-        Queue qe1 = new LinkedList();
-        Queue qe2 = new LinkedList();
+        Queue BeforeDot = new LinkedList();
+        Queue AfterDot = new LinkedList();
 
         double sum = 0;
         boolean flag = true;
-        while (!qeNum.isEmpty())
+        while (!queueDouble.isEmpty())
         {
-            if((char)qeNum.peek()=='.') {
+            if((char) queueDouble.peek()=='.') {
                 flag = false;
-                qeNum.poll();
+                queueDouble.poll();
             }else {
                 if (flag)
-                    qe1.add((char) qeNum.poll());
+                    BeforeDot.add((char) queueDouble.poll());
                 else
-                    qe2.add((char) qeNum.poll());
+                    AfterDot.add((char) queueDouble.poll());
             }
         }
-        while(!qe1.isEmpty())
+        while(!BeforeDot.isEmpty())
         {
-            int res=1;
-            for(int i=0; i < qe1.size()-1;i++)
+            int result1=1;
+            for(int i=0; i < BeforeDot.size()-1;i++)
             {
-                res*=10;
+                result1*=10;
             }
-            int temp = (char) qe1.poll() - 48;
-            res*=temp;
-            sum+=res;
+            int tempVar = (char) BeforeDot.poll() - 48;
+            result1*=tempVar;
+            sum+=result1;
         }
 
         int k=1;
-        while(!qe2.isEmpty())
+        while(!AfterDot.isEmpty())
         {
-            double res=1;
+            double result2=1;
             for(int i=0; i < k; i++)
             {
-                res/=10;
+                result2/=10;
             }
-            int temp = (char) qe2.poll() - 48;
-            res*=temp;
-            sum+=res;
+            int temp = (char) AfterDot.poll() - 48;
+            result2*=temp;
+            sum+=result2;
             k++;
         }
         return sum;
