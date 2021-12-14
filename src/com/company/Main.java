@@ -5,9 +5,9 @@ import java.util.Scanner;
 /**
  * класс мейн
  */
-public class Main {
+    public class Main {
     /**
-     *метод для ввода выражения, проверок и решения
+     * метод для ввода выражения, провероки решения
      * @param args аргумент командной строки
      */
     public static void main(String[] args) {

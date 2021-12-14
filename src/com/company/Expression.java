@@ -8,20 +8,43 @@ import java.util.Stack;
  * класс решения выражения
  */
 public class Expression {
-
+    /**
+     *стек их инфиксной в постфиксную
+     */
     private Stack stackInfToPost = new Stack();
+    /**
+     *постфиксная запись
+     */
     private Queue queuePost = new LinkedList();
+    /**
+     *очередь для чисел с точкой
+     */
     private Queue queueDouble = new LinkedList();
+    /**
+     *стек для проверки на ошибки
+     */
     private Stack stackError = new Stack();
+    /**
+     *временная переменная
+     */
     private double tempVar;
+    /**
+     *наличие ошибки
+     */
     private boolean check = true;
+    /**
+     *массив символов из строки для проверки на ошибки
+     */
     char [] ToCharArr1;
+    /**
+     *массив символов из строки для вычисления выражения
+     */
     char [] ToCharArr2;
 
     /**
-     * Конструктор, передается 2 строки , одинаковые ,
-     * @param expression1 строка1
-     * @param expression2 строка2
+     * конструктор, предаем 2 одинаковые строки
+     * @param expression1 строка 1
+     * @param expression2 строка 2
      */
     public Expression(String expression1, String expression2)
     {
@@ -168,10 +191,14 @@ public class Expression {
     }
 
     /**
-     * Вычисление постфиксного выражения
-     * @return результат вычисления
+     * решение выражения
      */
     double solution =0;
+
+    /**
+     * вычисление постфиксного выражения
+     * @return результат вычисления
+     */
     public boolean PostOfResult()
     {
         Stack result = new Stack();
@@ -213,7 +240,12 @@ public class Expression {
         solution = (double)result.peek();
         return true;
     }
-public double getSolution(){
+
+    /**
+     * получение решения
+     * @return решение
+     */
+    public double getSolution(){
         return solution;
 }
     /**
